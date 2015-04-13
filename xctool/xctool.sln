@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual Studio 2010
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "xctool", "xctool\xctool.csproj", "{6D377A6C-41F6-498F-A710-6FFFCC010736}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JumpKick.HttpLib", "..\httplib-2.0.11\JumpKick.HttpLib\JumpKick.HttpLib\JumpKick.HttpLib.csproj", "{D626C4EC-D793-4541-8631-1AF678A29490}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JumpKick.HttpLib", "..\thirdparty\httplib-2.0.11\JumpKick.HttpLib\JumpKick.HttpLib\JumpKick.HttpLib.csproj", "{D626C4EC-D793-4541-8631-1AF678A29490}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

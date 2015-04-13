@@ -22,9 +22,22 @@ namespace xctool
             InitializeComponent();
         }
 
+        /// <summary>
+        /// 初始化
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void Main_Load(object sender, EventArgs e)
         {
-    
+            tab_xc.Controls.Add(new Drive());
+        }
+
+        /// <summary>
+        /// 加载数据
+        /// </summary>
+        private void LoadData()
+        { 
+            
         }
 
     }
