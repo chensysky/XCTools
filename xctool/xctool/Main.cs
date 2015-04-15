@@ -11,11 +11,15 @@ using System.IO;
 using System.Net;
 using JumpKick.HttpLib;
 using Html = HtmlAgilityPack;
+using xctool.Model;
+using xctool.Events;
 
 namespace xctool
 {
     public partial class Main : Form
     {
+        private Drive _drive;
+        private OrderList _orderlist;
 
         public Main()
         {
@@ -29,15 +33,30 @@ namespace xctool
         /// <param name="e"></param>
         private void Main_Load(object sender, EventArgs e)
         {
-            tab_xc.Controls.Add(new Drive());
-        }
+            _drive = new Drive();
+            _drive.Dock = DockStyle.Fill;
+            _orderlist = new OrderList();
+            _orderlist.Dock = DockStyle.Bottom;
+            _orderlist.OrderEvent += new OrderEventHander(new Action<object, OrderEventArgs>((obj, args) =>
+            {
+                switch (args.Action)
+                {
+                    case OrderAction.Add:
+                        _orderlist.AddOrder(_drive.GetOrderList());
+                        break;
+                    case OrderAction.Start:
+                        _drive.SetState(false);
+                        break;
+                    case OrderAction.Finsh:
+                        _drive.SetOrderSuccess(((OrderCompleteEventArgs)args.Args).OrderInfo);
+                        break;
 
-        /// <summary>
-        /// 加载数据
-        /// </summary>
-        private void LoadData()
-        { 
-            
+                    default:
+                        break;
+                }
+            }));
+            tab_xc.Controls.Add(_drive);
+            tab_xc.Controls.Add(_orderlist);
         }
 
     }

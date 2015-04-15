@@ -39,10 +39,10 @@
             this.rbtn_cn = new System.Windows.Forms.RadioButton();
             this.label1 = new System.Windows.Forms.Label();
             this.panel1 = new System.Windows.Forms.Panel();
-            this.table1 = new XPTable.Models.Table();
+            this.xptable = new XPTable.Models.Table();
             this.groupBox1.SuspendLayout();
             this.panel1.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.table1)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.xptable)).BeginInit();
             this.SuspendLayout();
             // 
             // groupBox1
@@ -157,21 +157,21 @@
             // 
             // panel1
             // 
-            this.panel1.Controls.Add(this.table1);
+            this.panel1.Controls.Add(this.xptable);
             this.panel1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.panel1.Location = new System.Drawing.Point(0, 47);
             this.panel1.Name = "panel1";
             this.panel1.Size = new System.Drawing.Size(805, 405);
             this.panel1.TabIndex = 1;
             // 
-            // table1
+            // xptable
             // 
-            this.table1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.table1.Location = new System.Drawing.Point(0, 0);
-            this.table1.Name = "table1";
-            this.table1.Size = new System.Drawing.Size(805, 405);
-            this.table1.TabIndex = 0;
-            this.table1.Text = "table1";
+            this.xptable.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.xptable.Location = new System.Drawing.Point(0, 0);
+            this.xptable.Name = "xptable";
+            this.xptable.Size = new System.Drawing.Size(805, 405);
+            this.xptable.TabIndex = 0;
+            this.xptable.Text = "table1";
             // 
             // Drive
             // 
@@ -185,7 +185,7 @@
             this.groupBox1.ResumeLayout(false);
             this.groupBox1.PerformLayout();
             this.panel1.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)(this.table1)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.xptable)).EndInit();
             this.ResumeLayout(false);
 
         }
@@ -203,6 +203,6 @@
         private System.Windows.Forms.RadioButton rbtn_cn;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Panel panel1;
-        private XPTable.Models.Table table1;
+        private XPTable.Models.Table xptable;
     }
 }

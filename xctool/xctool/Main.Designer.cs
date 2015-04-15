@@ -38,10 +38,11 @@
             // 
             this.tabControl1.Controls.Add(this.tab_xc);
             this.tabControl1.Controls.Add(this.tabPage2);
-            this.tabControl1.Location = new System.Drawing.Point(12, 12);
+            this.tabControl1.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.tabControl1.Location = new System.Drawing.Point(0, 0);
             this.tabControl1.Name = "tabControl1";
             this.tabControl1.SelectedIndex = 0;
-            this.tabControl1.Size = new System.Drawing.Size(817, 466);
+            this.tabControl1.Size = new System.Drawing.Size(966, 499);
             this.tabControl1.TabIndex = 0;
             // 
             // tab_xc
@@ -49,7 +50,7 @@
             this.tab_xc.Location = new System.Drawing.Point(4, 22);
             this.tab_xc.Name = "tab_xc";
             this.tab_xc.Padding = new System.Windows.Forms.Padding(3);
-            this.tab_xc.Size = new System.Drawing.Size(809, 440);
+            this.tab_xc.Size = new System.Drawing.Size(958, 473);
             this.tab_xc.TabIndex = 0;
             this.tab_xc.Text = "学车预约";
             this.tab_xc.UseVisualStyleBackColor = true;
@@ -59,7 +60,7 @@
             this.tabPage2.Location = new System.Drawing.Point(4, 22);
             this.tabPage2.Name = "tabPage2";
             this.tabPage2.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage2.Size = new System.Drawing.Size(809, 440);
+            this.tabPage2.Size = new System.Drawing.Size(958, 473);
             this.tabPage2.TabIndex = 1;
             this.tabPage2.Text = "模拟器预约";
             this.tabPage2.UseVisualStyleBackColor = true;
@@ -68,7 +69,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(841, 479);
+            this.ClientSize = new System.Drawing.Size(966, 499);
             this.Controls.Add(this.tabControl1);
             this.Name = "Main";
             this.Text = "学车预约";

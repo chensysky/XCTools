@@ -6,8 +6,10 @@ using System.Data;
 using System.Linq;
 using System.Text;
 using System.Windows.Forms;
-using XPTable;
+using XPTable.Models;
+using XPTable.Events;
 using xctool.Service;
+using xctool.Model;
 
 namespace xctool
 {
@@ -15,7 +17,14 @@ namespace xctool
     {
 
         DriveService _driveService = new DriveService();
+        DataTable _dt;
+        Dictionary<string, Cell> _sel = new Dictionary<string, Cell>();
+        string _queryDate;
+        string _driveType;
 
+        /// <summary>
+        /// 初始化
+        /// </summary>
         public Drive()
         {
             InitializeComponent();
@@ -28,7 +37,28 @@ namespace xctool
         /// <param name="e"></param>
         private void Drive_Load(object sender, EventArgs e)
         {
-            _driveService.Init();
+            btn_query.Enabled = false;
+            //选中事件
+            xptable.CellCheckChanged += new XPTable.Events.CellCheckBoxEventHandler(new Action<object, CellCheckBoxEventArgs>((obj, args) =>
+            {
+                if (args.Cell.Data != null)
+                {
+                    if (args.Cell.Checked)
+                    {
+                        _sel.Add(args.Cell.Data.ToString(), args.Cell);
+                    }
+                    else
+                    {
+                        if (_sel.ContainsKey(args.Cell.Data.ToString()))
+                        {
+                            _sel.Remove(args.Cell.Data.ToString());
+                        }
+                    }
+                }
+            }));
+
+            //初始化数据源
+            _driveService.Init(() => { this.Invoke(new Action(() => { this.btn_query.Enabled = true; })); });
         }
 
         /// <summary>
@@ -38,17 +68,95 @@ namespace xctool
         /// <param name="e"></param>
         private void btn_query_Click(object sender, EventArgs e)
         {
-            _driveService.Query(GetType(), datepicker.Value.ToString("yyy-MM-dd"), m =>
+            xptable.Clear();
+            _sel.Clear();
+            _queryDate= datepicker.Value.ToString("yyy-MM-dd");
+            _driveType = GetDriveType();
+            bool hasNewDate = false;
+            _driveService.Query(_driveType, _queryDate, new Action<DataTable, bool>((m, istech) =>
             {
-                string content = m;
-            });
+                _dt = m;
+                //对当前时间的支持
+                if (istech)
+                {
+                    string maxdate = _dt.Rows[_dt.Rows.Count - 1][2].ToString();
+                    maxdate = maxdate.Substring(0, 10);
+                    if ((Convert.ToDateTime(_queryDate) - Convert.ToDateTime(maxdate)).Days > 0)
+                    {
+                        DataRow dr = _dt.NewRow();
+                        foreach (DataColumn col in _dt.Columns)
+                        {
+                             if (col.ColumnName == "教练员" || col.ColumnName == "车型" || col.ColumnName == "教练号" || col.ColumnName == "日期")
+                                 dr[col.ColumnName] = _dt.Rows[_dt.Rows.Count - 1][col.ColumnName];
+                             else
+                                  dr[col.ColumnName] ="yunyue";
+                        }
+                        dr[2] = _queryDate;
+                        _dt.Rows.Add(dr);
+                        hasNewDate = true;
+                    }
+                }
+
+                this.Invoke(new Action(() =>
+                {
+                    xptable.BeginUpdate();
+                    List<Column> cols = new List<Column>();
+                    foreach (DataColumn col in m.Columns)
+                    {
+                        if (col.ColumnName == "教练员" || col.ColumnName == "车型" || col.ColumnName == "教练号" || col.ColumnName == "日期")
+                            cols.Add(new TextColumn(col.ColumnName, col.ColumnName == "日期" ? 150 : col.ColumnName == "教练号" ? 100 : 80));
+                        else
+                            cols.Add(new CheckBoxColumn(col.ColumnName, null, 75, true));
+                    }
+                    xptable.ColumnModel = new ColumnModel(cols.ToArray());
+
+                    //
+                    List<Row> rows = new List<Row>();
+                    int r=0;
+                    foreach (DataRow dr in m.Rows)
+                    {
+                        List<Cell> cells = new List<Cell>();
+                        int c=0;
+                        foreach (DataColumn col in m.Columns)
+                        {
+                            string value = dr[col.ColumnName].ToString();
+                            if (value == "yunyue")
+                            {
+                                Cell cell=new Cell("可预约", false, Color.Black, Color.Red, new Font("宋体", 12, FontStyle.Bold));
+                                cell.Data = r + "|" + c;
+                                cells.Add(cell);
+                            }
+                            else
+                            {
+                                if (col.ColumnName == "教练员" || col.ColumnName == "车型" || col.ColumnName == "教练号" || col.ColumnName == "日期")
+                                {
+                                    cells.Add(new Cell(value, false, Color.Black, ((hasNewDate && (r == _dt.Rows.Count - 1)) ? Color.AliceBlue : Color.Transparent), new Font("宋体", 12, FontStyle.Regular)));
+                                }
+                                else
+                                {
+                                    cells.Add(new Cell(value, false, Color.Gray, Color.Transparent, new Font("宋体", 10, FontStyle.Italic)));
+                                }
+                            }
+                            c++;
+                        }
+
+                        Row row = new Row(cells.ToArray());
+                        rows.Add(row);
+                        r++;
+                    }
+                    TableModel table = new TableModel(rows.ToArray());
+                    table.RowHeight = 30;
+                    xptable.TableModel = table;
+                    xptable.EndUpdate();
+                }));
+            }));
         }
 
         /// <summary>
         /// 得到类型
         /// </summary>
         /// <returns></returns>
-        private string GetType()
+        private string GetDriveType()
         {
             if (rbtn_cn.Checked)
             {
@@ -74,6 +182,53 @@ namespace xctool
             {
                 return rbtn_cn.Text;
             }
+        }
+
+        /// <summary>
+        /// 返回需要预约的列表
+        /// </summary>
+        /// <returns></returns>
+        public List<OrderInfo> GetOrderList()
+        {
+            List<OrderInfo> infolist = new List<OrderInfo>();
+            foreach (string key in _sel.Keys)
+            {
+                string[] rcs=key.Split('|');
+                int row = Convert.ToInt32(rcs[0]);
+                int col = Convert.ToInt32(rcs[1]);
+                OrderInfo info = new OrderInfo();
+                info.Date = _queryDate;
+                info.Type = _driveType;
+                info.TecherName = _dt.Rows[row][0].ToString();
+                info.TechNo = _dt.Rows[row][_dt.Columns.Count - 1].ToString();
+                info.Time = Convert.ToInt32(_dt.Columns[col].ColumnName.Substring(0, 2));
+                info.Timeline = info.Time + 1;
+                info.RowColId = key;
+                infolist.Add(info);
+            }
+            return infolist;
+        }
+
+        /// <summary>
+        /// 设置预定成功
+        /// </summary>
+        /// <returns></returns>
+        public void SetOrderSuccess(OrderInfo info)
+        {
+            if (_sel.ContainsKey(info.RowColId))
+            {
+                xptable.BeginUpdate();
+                _sel[info.RowColId].BackColor = Color.Green;
+                xptable.EndUpdate();
+            }
+        }
+
+        /// <summary>
+        /// 设置状态
+        /// </summary>
+        public void SetState(bool queryable)
+        {
+            btn_query.Enabled = queryable;
         }
 
 

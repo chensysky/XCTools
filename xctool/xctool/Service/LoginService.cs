@@ -15,7 +15,7 @@ namespace xctool.Service
         /// <summary>
         /// 页面的表单
         /// </summary>
-        List<Html.HtmlNode> _inputs;
+        Html.HtmlNodeCollection _inputs;
 
 
         /// <summary>
@@ -34,7 +34,7 @@ namespace xctool.Service
                 ).Go();
                 Html.HtmlDocument document = new Html.HtmlDocument();
                 document.LoadHtml(content);
-                _inputs = document.DocumentNode.SelectNodes("//input[@type='password' or @type='hidden' or @type='text']").ToList();
+                _inputs = document.DocumentNode.SelectNodes("//input[@type='password' or @type='hidden' or @type='text']");
             }).Go();
         }
 

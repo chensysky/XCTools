@@ -25,6 +25,7 @@ namespace xctool
         public Login()
         {
             InitializeComponent();
+          
         }
 
 
@@ -37,6 +38,7 @@ namespace xctool
         {
             txt_no.Text = ServiceConfig.GetConfig(ServiceConfigType.UserNo);
             txt_pwd.Text = ServiceConfig.GetConfig(ServiceConfigType.UserPwd);
+            btn_login.Enabled = false;
             //
             LoadCode();
         }
@@ -64,7 +66,7 @@ namespace xctool
                 }
                 else
                 {
-                    MessageBox.Show("大哥，登录失败！");
+                    this.Invoke(new Action(() => { MessageBox.Show("大哥，登录失败！"); btn_login.Enabled = false; })); 
                     //
                     LoadCode();
                 }
@@ -76,7 +78,7 @@ namespace xctool
         /// </summary>
         private void LoadCode()
         {
-            _loginService.Init(m => { this.picbox_code.Image = m; });
+            _loginService.Init(m => { this.Invoke(new Action(() => { this.picbox_code.Image = m; this.btn_login.Enabled = true; })); });
         }
 
     }
