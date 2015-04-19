@@ -202,7 +202,7 @@ namespace xctool
                 info.TecherName = _dt.Rows[row][0].ToString();
                 info.TechNo = _dt.Rows[row][_dt.Columns.Count - 1].ToString();
                 info.Time = Convert.ToInt32(_dt.Columns[col].ColumnName.Substring(0, 2));
-                info.Timeline = info.Time + 1;
+                info.Timeline = (info.Time < 18) ? info.Time + 1 : info.Time + 2;
                 info.RowColId = key;
                 infolist.Add(info);
             }

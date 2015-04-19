@@ -35,9 +35,12 @@ namespace xctool.Service
                 Html.HtmlDocument document = new Html.HtmlDocument();
                 document.LoadHtml(content);
                 _inputs = document.DocumentNode.SelectNodes("//input[@type='password' or @type='hidden' or @type='text']");
-            }).Go();
+            }).TimeOut(5000).OnFail(new Action<WebException>((exp) =>
+            {
+                Init(showCodeImg);
+            })).Go();
         }
-
+        
         /// <summary>
         /// 提交登录
         /// </summary>

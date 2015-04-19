@@ -34,6 +34,8 @@ namespace xctool.Service
         //
         public const string DriveServiceGetUrl = "DriveServiceGetUrl";
         public const string DriveServiceQueryUrl = "DriveServiceQueryUrl";
+        public const string DriveServicePostUrl = "DriveServicePostUrl";
+        
         
     }
 }

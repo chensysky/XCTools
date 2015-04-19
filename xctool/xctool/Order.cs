@@ -9,6 +9,7 @@ using System.Threading;
 using System.Windows.Forms;
 using xctool.Model;
 using xctool.Events;
+using xctool.Service;
 
 namespace xctool
 {
@@ -41,7 +42,16 @@ namespace xctool
         /// </summary>
         public void Start()
         {
-            Thread.Sleep(1000);
+            Action<OrderInfo> orderAction = new Action<OrderInfo>((info) => { 
+                //               
+                OrderService os=new OrderService(info);
+                os.Init(()=>{
+                    os.Submit(new Action<string>((result) => {
+                        
+                    }));
+                });
+            });
+            orderAction.BeginInvoke(_info, null, null);
             OrderCompleteEvent(this, new OrderCompleteEventArgs(_info));
         }
 

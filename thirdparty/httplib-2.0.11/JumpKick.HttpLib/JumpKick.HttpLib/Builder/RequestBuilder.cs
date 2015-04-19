@@ -40,6 +40,8 @@ namespace JumpKick.HttpLib.Builder
                 Action = actionProvider,
                 Auth = authProvider,
                 Headers = headerProvider,
+                Referer = referer,
+                Timeout = timeout,
                 Body = bodyProvider
             };
 

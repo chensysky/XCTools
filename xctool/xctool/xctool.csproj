@@ -57,6 +57,12 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ChangeTecher.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="ChangeTecher.Designer.cs">
+      <DependentUpon>ChangeTecher.cs</DependentUpon>
+    </Compile>
     <Compile Include="Drive.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -94,8 +100,10 @@
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Service\ChangeService.cs" />
     <Compile Include="Service\DriveService.cs" />
     <Compile Include="Service\LoginService.cs" />
+    <Compile Include="Service\OrderService.cs" />
     <Compile Include="Service\ServiceConfig.cs" />
     <Compile Include="Simulation.cs">
       <SubType>UserControl</SubType>
@@ -103,6 +111,9 @@
     <Compile Include="Simulation.Designer.cs">
       <DependentUpon>Simulation.cs</DependentUpon>
     </Compile>
+    <EmbeddedResource Include="ChangeTecher.resx">
+      <DependentUpon>ChangeTecher.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Drive.resx">
       <DependentUpon>Drive.cs</DependentUpon>
     </EmbeddedResource>

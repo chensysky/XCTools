@@ -13,6 +13,8 @@
         protected HeaderProvider headers;
         protected AuthenticationProvider auth;
         protected BodyProvider body;
+        private string referer;
+        private int? timeout;
        
         protected ActionProvider action;
 
@@ -56,6 +58,30 @@
             get
             {
                 return this.headers;
+            }
+        }
+
+        public string Referer
+        {
+            set
+            {
+                this.referer = value;
+            }
+            get
+            {
+                return this.referer;
+            }
+        }
+
+        public int? Timeout
+        {
+            set
+            {
+                this.timeout= value;
+            }
+            get
+            {
+                return this.timeout;
             }
         }
 
@@ -121,6 +147,15 @@
                 HttpWebRequest request = this.GetWebRequest(url);
                 request.CookieContainer = Cookie.cookies;
                 request.Method = method.ToString().ToUpper();
+
+                //Referer
+                if (!string.IsNullOrEmpty(this.referer))
+                    request.Referer = this.referer;
+
+                //Timeout
+                if (this.timeout != null)
+                    request.Timeout = this.timeout.Value;
+               
 
                 if (method == HttpVerb.Get || method == HttpVerb.Head) 
                 {

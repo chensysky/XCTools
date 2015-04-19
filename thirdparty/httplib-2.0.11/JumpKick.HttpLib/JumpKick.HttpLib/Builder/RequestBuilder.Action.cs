@@ -20,6 +20,8 @@ namespace JumpKick.HttpLib.Builder
         ActionProvider actionProvider;
         Action<WebHeaderCollection, Stream> success;
         Action<WebException> fail;
+        int? timeout;
+
         public RequestBuilder OnSuccess(Action<WebHeaderCollection, String> action)
         {
             this.success = (headers, stream) =>
@@ -49,7 +51,11 @@ namespace JumpKick.HttpLib.Builder
             return this;
         }
 
-
+        public RequestBuilder TimeOut(int timeout)
+        {
+            this.timeout = timeout;
+            return this;
+        }
 
 #if NETFX_CORE
         public RequestBuilder DownloadTo(Windows.Storage.IStorageFile file)

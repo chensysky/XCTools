@@ -13,6 +13,7 @@ namespace JumpKick.HttpLib.Builder
 
         #region Headers
         private HeaderProvider headerProvider;
+        private string referer;
 
         public RequestBuilder Headers(object header)
         {
@@ -44,6 +45,11 @@ namespace JumpKick.HttpLib.Builder
             return this;
         }
 
+        public RequestBuilder Referer(string referer)
+        {
+            this.referer = System.Uri.EscapeUriString(referer);
+            return this;
+        }
         #endregion
 
     }
