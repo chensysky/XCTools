@@ -16,7 +16,20 @@ namespace xctool.Service
         /// 页面的表单
         /// </summary>
         Html.HtmlNodeCollection _inputs;
+
+        public Html.HtmlNodeCollection Inputs
+        {
+            get { return _inputs; }
+            set { _inputs = value; }
+        }
+
         Html.HtmlNodeCollection _selects;
+
+        public Html.HtmlNodeCollection Selects
+        {
+            get { return _selects; }
+            set { _selects = value; }
+        }
 
         /// <summary>
         /// 加载
@@ -27,8 +40,8 @@ namespace xctool.Service
             {
                 Html.HtmlDocument document = new Html.HtmlDocument();
                 document.LoadHtml(content);
-                _inputs = document.DocumentNode.SelectNodes("//input[@type='password' or @type='hidden' or @type='text']");
-                _selects = document.DocumentNode.SelectNodes("//select");
+                Inputs = document.DocumentNode.SelectNodes("//input[@type='password' or @type='hidden' or @type='text']");
+                Selects = document.DocumentNode.SelectNodes("//select");
 
                 if (ServiceError.TestServiceError(document.DocumentNode))
                     fail("服务器出错！");
@@ -48,25 +61,31 @@ namespace xctool.Service
         {
             string dateControlName = "";
             Dictionary<string, string> form = new Dictionary<string, string>();
-            foreach (Html.HtmlNode node in _inputs)
+            if (Inputs != null)
             {
-                string name = node.Attributes["name"].Value;
-                if (name.IndexOf("txtBookingClassDate") != -1)
+                foreach (Html.HtmlNode node in Inputs)
                 {
-                    form.Add(name, date);
-                    dateControlName = name;
-                }
-                else
-                {
-                    form.Add(name, node.Attributes["value"].Value);
+                    string name = node.Attributes["name"].Value;
+                    if (name.IndexOf("txtBookingClassDate") != -1)
+                    {
+                        form.Add(name, date);
+                        dateControlName = name;
+                    }
+                    else
+                    {
+                        form.Add(name, node.Attributes["value"].Value);
+                    }
                 }
             }
-            foreach (Html.HtmlNode node in _selects)
+            if (Selects != null)
             {
-                string name = node.Attributes["name"].Value;
-                if (name.IndexOf("ddlTrainType") != -1)
+                foreach (Html.HtmlNode node in Selects)
                 {
-                    form.Add(name, type);
+                    string name = node.Attributes["name"].Value;
+                    if (name.IndexOf("ddlTrainType") != -1)
+                    {
+                        form.Add(name, type);
+                    }
                 }
             }
             form.Add("__EVENTARGUMENT", "");

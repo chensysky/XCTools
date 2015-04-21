@@ -66,6 +66,15 @@ namespace xctool.Model
             set { sucess = value; }
         }
 
+        private float postfrequency;
+
+        public float PostFrequency
+        {
+            get { return postfrequency; }
+            set { postfrequency = value; }
+        }
+
+
         /// <summary>
         /// 比较对象
         /// </summary>

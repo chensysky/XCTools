@@ -52,24 +52,27 @@ namespace xctool.Service
         public void Login(string userNo, string userPwd, string code, Action<bool> success, Action<string> fail)
         {
             Dictionary<string, string> form = new Dictionary<string, string>();
-            foreach (Html.HtmlNode node in _inputs)
+            if (_inputs != null)
             {
-                string name = node.Attributes["name"].Value;
-                if (name.IndexOf("txtPupilNo") != -1)
+                foreach (Html.HtmlNode node in _inputs)
                 {
-                    form.Add(name, userNo);
-                }
-                else if (name.IndexOf("txtWebPwd") != -1)
-                {
-                    form.Add(name, userPwd);
-                }
-                else if (name.IndexOf("txtCode") != -1)
-                {
-                    form.Add(name, code);
-                }
-                else
-                {
-                    form.Add(name, node.Attributes["value"].Value);
+                    string name = node.Attributes["name"].Value;
+                    if (name.IndexOf("txtPupilNo") != -1)
+                    {
+                        form.Add(name, userNo);
+                    }
+                    else if (name.IndexOf("txtWebPwd") != -1)
+                    {
+                        form.Add(name, userPwd);
+                    }
+                    else if (name.IndexOf("txtCode") != -1)
+                    {
+                        form.Add(name, code);
+                    }
+                    else
+                    {
+                        form.Add(name, node.Attributes["value"].Value);
+                    }
                 }
             }
             form.Add("__EVENTARGUMENT", "");

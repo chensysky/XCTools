@@ -50,7 +50,9 @@ namespace xctool
                     case OrderAction.Finsh:
                         _drive.SetOrderSuccess(((OrderCompleteEventArgs)args.Args).OrderInfo);
                         break;
-
+                    case OrderAction.Cancel:
+                        _drive.SetState(true);
+                        break;
                     default:
                         break;
                 }

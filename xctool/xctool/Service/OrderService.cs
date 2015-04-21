@@ -47,7 +47,7 @@ namespace xctool.Service
                 {
                     //
                     var msgnode = document.DocumentNode.SelectSingleNode("/html[1]/body[1]/table[1]/tr[2]/td[1]/table[1]/tr[1]/td[2]/table[2]/tr[1]/td[1]/table[1]/tr[1]/td[2]/div[1]/span[1]");
-                    if (msgnode != null && !String.IsNullOrEmpty(msgnode.InnerText))
+                    if (msgnode != null && !String.IsNullOrEmpty(msgnode.InnerText) && msgnode.InnerText.IndexOf("您已约过班车") == -1)
                     {
                         fail(msgnode.InnerText);
                         return;
@@ -67,33 +67,39 @@ namespace xctool.Service
         {
             string ddlineControlName = "";
             Dictionary<string, string> form = new Dictionary<string, string>();
-            foreach (Html.HtmlNode node in _inputs)
+            if (_inputs != null)
             {
-                string name = node.Attributes["name"].Value;
-                if (name.IndexOf("time") != -1)
+                foreach (Html.HtmlNode node in _inputs)
                 {
-                    if (!form.ContainsKey(name))
+                    string name = node.Attributes["name"].Value;
+                    if (name.IndexOf("time") != -1)
                     {
-                        form.Add(name, "radio3");
+                        if (!form.ContainsKey(name))
+                        {
+                            form.Add(name, "radio3");
+                        }
+                    }
+                    else
+                    {
+                        if (node.Attributes["disabled"] == null)
+                            form.Add(name, node.Attributes["value"].Value);
                     }
                 }
-                else
-                {
-                    if (node.Attributes["disabled"] == null)
-                        form.Add(name, node.Attributes["value"].Value);
-                }
             }
-            foreach (Html.HtmlNode node in _selects)
+            if (_selects != null)
             {
-                string name = node.Attributes["name"].Value;
-                if (name.IndexOf("ddlLine") != -1)
+                foreach (Html.HtmlNode node in _selects)
                 {
-                    form.Add(name, "---请选择---");
-                    ddlineControlName = name;
-                }
-                else if (name.IndexOf("ddlStationAndTime") != -1)
-                {
-                    form.Add(name, "---请选择---");
+                    string name = node.Attributes["name"].Value;
+                    if (name.IndexOf("ddlLine") != -1)
+                    {
+                        form.Add(name, "---请选择---");
+                        ddlineControlName = name;
+                    }
+                    else if (name.IndexOf("ddlStationAndTime") != -1)
+                    {
+                        form.Add(name, "---请选择---");
+                    }
                 }
             }
             form.Add("__EVENTARGUMENT", "");
@@ -125,48 +131,50 @@ namespace xctool.Service
             {
                 #region success
                 Dictionary<string, string> form = new Dictionary<string, string>();
-                foreach (Html.HtmlNode node in _inputs)
+                if (_inputs != null)
                 {
-                    string name = node.Attributes["name"].Value;
-                    if (name.IndexOf("time") != -1)
+                    foreach (Html.HtmlNode node in _inputs)
                     {
-                        if (!form.ContainsKey(name))
+                        string name = node.Attributes["name"].Value;
+                        if (name.IndexOf("time") != -1)
                         {
-                            form.Add(name, "radio3");
+                            if (!form.ContainsKey(name))
+                            {
+                                form.Add(name, "radio3");
+                            }
+                        }
+                        else
+                        {
+                            if (node.Attributes["disabled"] == null)
+                                form.Add(name, node.Attributes["value"].Value);
                         }
                     }
-                    else
-                    {
-                        if (node.Attributes["disabled"] == null)
-                            form.Add(name, node.Attributes["value"].Value);
-                    }
                 }
-
                 form.Add("__EVENTARGUMENT", "");
                 form.Add("__EVENTTARGET", "");
 
                 Http.Post(ServiceConfig.GetConfig(ServiceConfigType.DriveServicePostUrl) + GetUrlGetArgs()).Form(form).OnSuccess(result =>
                 {
-                     Html.HtmlDocument document = new Html.HtmlDocument();
-                     document.LoadHtml(result);
-                     if (ServiceError.TestServiceError(document.DocumentNode))
-                         fail("服务器出错！");
-                     else
-                     {
-                         Html.HtmlNodeCollection trs = document.DocumentNode.SelectNodes("/html[1]/body[1]/table[1]/tr[2]/td[1]/table[1]/tr[1]/td[2]/table[2]/tr[5]/td[1]/div[1]/fieldset[1]/div[1]/table[1]/tr[position()>1]");
-                         foreach (Html.HtmlNode tr in trs)
-                         {
-                             string date = tr.SelectSingleNode("./td[1]/span").InnerText;
-                             string time = tr.SelectSingleNode("./td[2]/span").InnerText;
-                             string techer = tr.SelectSingleNode("./td[3]/span").InnerText;
-                             if (_info.TecherName == techer && time.Substring(0, 2) == _info.Time.ToString("D2") && date == _info.Date)
-                             {
-                                 success();
-                                 break;
-                             }
-                         }
-                         fail("提交失败！");
-                     }
+                    Html.HtmlDocument document = new Html.HtmlDocument();
+                    document.LoadHtml(result);
+                    if (ServiceError.TestServiceError(document.DocumentNode))
+                        fail("服务器出错！");
+                    else
+                    {
+                        Html.HtmlNodeCollection trs = document.DocumentNode.SelectNodes("/html[1]/body[1]/table[1]/tr[2]/td[1]/table[1]/tr[1]/td[2]/table[2]/tr[5]/td[1]/div[1]/fieldset[1]/div[1]/table[1]/tr[position()>1]");
+                        foreach (Html.HtmlNode tr in trs)
+                        {
+                            string date = tr.SelectSingleNode("./td[1]/span").InnerText;
+                            string time = tr.SelectSingleNode("./td[2]/span").InnerText;
+                            string techer = tr.SelectSingleNode("./td[3]/span").InnerText;
+                            if (_info.TecherName == techer && time.Substring(0, 2) == _info.Time.ToString("D2") && date == _info.Date)
+                            {
+                                success();
+                                return;
+                            }
+                        }
+                        fail("提交失败！");
+                    }
                 }).TimeOut(5000).OnFail(new Action<WebException>((exp) =>
                 {
                     fail(exp.ToString());
@@ -186,7 +194,7 @@ namespace xctool.Service
             return string.Format("?coachName={0}&date={1}&beginTime={2}%3a00&trainType={3}&timeLine={4}",
                         _info.TechNo,
                         _info.Date,
-                        _info.Time,
+                        _info.Time.ToString("D2"),
                         _info.Type,
                         _info.Timeline);
         }

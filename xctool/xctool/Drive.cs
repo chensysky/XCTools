@@ -17,6 +17,13 @@ namespace xctool
     {
 
         DriveService _driveService = new DriveService();
+
+        public DriveService DriveService
+        {
+            get { return _driveService; }
+            set { _driveService = value; }
+        }
+
         DataTable _dt;
         Dictionary<string, Cell> _sel = new Dictionary<string, Cell>();
         string _queryDate;
@@ -72,7 +79,7 @@ namespace xctool
         {
             ShowMsg("开始初始化数据......");
             //初始化数据源
-            _driveService.Init(() => { this.Invoke(new Action(() => { ShowMsg("数据初始化完成！"); this.btn_query.Enabled = true; })); },
+            DriveService.Init(() => { this.Invoke(new Action(() => { ShowMsg("数据初始化完成！"); this.btn_query.Enabled = true; })); },
                                error => { if (MessageBox.Show(error,"大哥,服务器不叼你，还继续试么？", MessageBoxButtons.OKCancel) == DialogResult.OK) DriveInit(); else Application.Exit(); });
         }
 
@@ -89,7 +96,7 @@ namespace xctool
             _queryDate= datepicker.Value.ToString("yyy-MM-dd");
             _driveType = GetDriveType();
             bool hasNewDate = false;
-            _driveService.Query(_driveType, _queryDate, new Action<DataTable, bool>((m, istech) =>
+            DriveService.Query(_driveType, _queryDate, new Action<DataTable, bool>((m, istech) =>
             {
                 #region 成功返回
             
@@ -247,7 +254,9 @@ namespace xctool
             {
                 xptable.BeginUpdate();
                 _sel[info.RowColId].BackColor = Color.Green;
+                _sel[info.RowColId].Checked = false;
                 xptable.EndUpdate();
+                SetState(true);
             }
         }
 

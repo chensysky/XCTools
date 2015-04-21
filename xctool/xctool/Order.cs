@@ -29,6 +29,7 @@ namespace xctool
             InitOrder();
         }
 
+
         /// <summary>
         /// 初始化预约信息
         /// </summary>
@@ -47,9 +48,11 @@ namespace xctool
             ShowMsg("开始预约");
             Action<OrderInfo> orderAction = null; 
             orderAction = new Action<OrderInfo>((info) =>
-            { 
-                //               
+            {
+                //    
+                #region 执行
                 OrderService os=new OrderService(info);
+                ShowMsg("第" + _count + "次加载预约信息");
                 os.Init(() =>
                 {
                     ShowMsg("第" + _count + "次预约信息加载完成");
@@ -59,13 +62,14 @@ namespace xctool
                         ShowMsg("预约成功");
                         this.Invoke(new Action(() => { this.group_order.BackColor = Color.Green; }));
                         OrderCompleteEvent(this, new OrderCompleteEventArgs(_info));
+                        return;
                     }, error =>
                     {
                         ShowMsg("第" + _count + "次预约失败，错误如下：");
                         ShowMsg(error);
                         if (!_over)
                         {
-                            Thread.Sleep(500);
+                            Thread.Sleep(((int)(1000 / _info.PostFrequency)));
                             _count++;
                             orderAction(_info);
                         }
@@ -75,11 +79,12 @@ namespace xctool
                     ShowMsg(error);
                     if (!_over)
                     {
-                        Thread.Sleep(500);
+                        Thread.Sleep(((int)(1000 / _info.PostFrequency)));
                         _count++;
                         orderAction(_info);
                     }
                 });
+                #endregion
             });
             orderAction.BeginInvoke(_info, null, null);
             ShowMsg("开始加载预约信息");
@@ -127,6 +132,7 @@ namespace xctool
             _over = true;
             this.lab_stop.ForeColor = Color.Red;
             this.lab_stop.Visible = false;
+            OrderEvent(this, new OrderEventArgs(OrderAction.Stop, _info));
         }
     }
 

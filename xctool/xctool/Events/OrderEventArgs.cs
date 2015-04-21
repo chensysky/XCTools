@@ -31,6 +31,6 @@ namespace xctool.Events
 
     public enum OrderAction
     {
-        Add, Start,Finsh,Complete,Cancel
+        Add, Start,Finsh,Complete,Cancel,Stop
     }
 }
