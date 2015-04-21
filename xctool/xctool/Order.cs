@@ -111,12 +111,12 @@ namespace xctool
             {
                 txt_msg.Invoke(new Action(() =>
                 {
-                    txt_msg.Text += "------------\r\n" + msg + "\r\n------------\r\n";
+                    txt_msg.Text = "------------\r\n" + msg + "\r\n------------\r\n" + txt_msg.Text;
                 }));
             }
             else
             {
-                txt_msg.Text += "------------\r\n" + msg + "\r\n------------\r\n";
+                txt_msg.Text = "------------\r\n" + msg + "\r\n------------\r\n" + txt_msg.Text;
             }
         }
 
