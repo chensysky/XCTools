@@ -22,7 +22,7 @@ namespace xctool.Service
         /// 加载
         /// </summary>
         /// <param name="showCodeImg"></param>
-        public void Init(Action<Bitmap> showCodeImg)
+        public void Init(Action<Bitmap> showCodeImg, Action<string> fail)
         {
             Http.Get(ServiceConfig.GetConfig(ServiceConfigType.LoginServiceUrl)).OnSuccess(content =>
             {
@@ -35,16 +35,21 @@ namespace xctool.Service
                 Html.HtmlDocument document = new Html.HtmlDocument();
                 document.LoadHtml(content);
                 _inputs = document.DocumentNode.SelectNodes("//input[@type='password' or @type='hidden' or @type='text']");
+
+                //
+                if (ServiceError.TestServiceError(document.DocumentNode))
+                    fail("服务器出错！");
+
             }).TimeOut(5000).OnFail(new Action<WebException>((exp) =>
             {
-                Init(showCodeImg);
+                fail(exp.ToString());
             })).Go();
         }
         
         /// <summary>
         /// 提交登录
         /// </summary>
-        public void Login(string userNo, string userPwd, string code, Action<bool> success)
+        public void Login(string userNo, string userPwd, string code, Action<bool> success, Action<string> fail)
         {
             Dictionary<string, string> form = new Dictionary<string, string>();
             foreach (Html.HtmlNode node in _inputs)
@@ -76,6 +81,10 @@ namespace xctool.Service
             {
                 Html.HtmlDocument document = new Html.HtmlDocument();
                 document.LoadHtml(result);
+                //
+                if (ServiceError.TestServiceError(document.DocumentNode))
+                    fail("服务器出错！");
+
                 if (document.DocumentNode.SelectSingleNode("//title").InnerText.Trim() != "学员预约")
                 {
                     success(true);
@@ -84,7 +93,10 @@ namespace xctool.Service
                 {
                     success(false);
                 }
-            }).Go();
+            }).TimeOut(5000).OnFail(new Action<WebException>((exp) =>
+            {
+                fail(exp.ToString());
+            })).Go();
         }
     }
 }

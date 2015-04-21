@@ -21,7 +21,7 @@ namespace xctool.Service
         /// <summary>
         /// 加载
         /// </summary>
-        public void Init(Action success)
+        public void Init(Action success,Action<string> fail)
         {
             Http.Get(ServiceConfig.GetConfig(ServiceConfigType.DriveServiceGetUrl)).OnSuccess(content =>
             {
@@ -29,15 +29,22 @@ namespace xctool.Service
                 document.LoadHtml(content);
                 _inputs = document.DocumentNode.SelectNodes("//input[@type='password' or @type='hidden' or @type='text']");
                 _selects = document.DocumentNode.SelectNodes("//select");
-                success();
-            }).Go();
+
+                if (ServiceError.TestServiceError(document.DocumentNode))
+                    fail("服务器出错！");
+                else
+                    success();
+            }).TimeOut(5000).OnFail(new Action<WebException>((exp) =>
+            {
+                fail(exp.ToString());
+            })).Go();
         }
 
 
         /// <summary>
         /// 查询
         /// </summary>
-        public void Query(string type, string date, Action<DataTable,bool> success)
+        public void Query(string type, string date, Action<DataTable, bool> success, Action<string> fail)
         {
             string dateControlName = "";
             Dictionary<string, string> form = new Dictionary<string, string>();
@@ -70,8 +77,23 @@ namespace xctool.Service
 
             Http.Post(ServiceConfig.GetConfig(ServiceConfigType.DriveServiceQueryUrl)).Form(form).OnSuccess(result =>
             {
-                success(GetDataTable(result, istech),istech);               
-            }).Go();
+                try
+                {
+                    Html.HtmlDocument document = new Html.HtmlDocument();
+                    document.LoadHtml(result);
+                    if (ServiceError.TestServiceError(document.DocumentNode))
+                        fail("服务器出错！");
+                    else
+                        success(GetDataTable(document, istech), istech);
+                }
+                catch(Exception exp)
+                {
+                    fail(exp.ToString());
+                }
+            }).TimeOut(5000).OnFail(new Action<WebException>((exp) =>
+            {
+                fail(exp.ToString());
+            })).Go();
         
         }
 
@@ -80,33 +102,12 @@ namespace xctool.Service
         /// </summary>
         /// <param name="content"></param>
         /// <returns></returns>
-        private DataTable GetDataTable(string content,bool istech)
+        private DataTable GetDataTable(Html.HtmlDocument content, bool istech)
         {
             DataTable dt = new DataTable();
             //
-            Html.HtmlDocument document = new Html.HtmlDocument();
-            document.LoadHtml(content);
+            Html.HtmlDocument document = content;
             Html.HtmlNode table = document.DocumentNode.SelectSingleNode("/html/body/table/tr[2]/td/table/tr/td[2]/table[2]/tr[" + (istech ? "3" : "2") + "]/td/div/div/table");
-
-            Html.HtmlNodeCollection trfs = document.DocumentNode.SelectNodes("/html[1]/body[1]/table[1]/tr[2]/td[1]/table[1]/tr[1]/td[2]/table[2]/tr[5]/td[1]/div[1]/fieldset[1]/div[1]/table[1]/tr[position()>1]");
-            foreach (Html.HtmlNode tr in trfs)
-            {
-                string date = tr.SelectSingleNode("./td[1]/span").InnerText;
-                string time = tr.SelectSingleNode("./td[2]/span").InnerText;
-                string techer = tr.SelectSingleNode("./td[3]/span").InnerText;
-                //if (_info.TecherName == techer && time.Substring(0, 2) == _info.Time.ToString("D2") && date == _info.Date)
-                //{
-                //    success(result);
-                //    break;
-                //}
-                 
-                int d =3;
-                string df = d.ToString("D2") + "|" + time.Substring(0, 2);
-                string f = "";
-            }
-
-
-
 
             //列
             DataColumn dc;

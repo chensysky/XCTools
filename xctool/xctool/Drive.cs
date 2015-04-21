@@ -28,6 +28,10 @@ namespace xctool
         public Drive()
         {
             InitializeComponent();
+
+            //
+            panel_msg.Width = flowLayoutPanel.Width - panel_query.Width - 15;
+            
         }
 
         /// <summary>
@@ -57,8 +61,19 @@ namespace xctool
                 }
             }));
 
+            //
+            DriveInit();
+        }
+
+        /// <summary>
+        /// 初始化
+        /// </summary>
+        private void DriveInit()
+        {
+            ShowMsg("开始初始化数据......");
             //初始化数据源
-            _driveService.Init(() => { this.Invoke(new Action(() => { this.btn_query.Enabled = true; })); });
+            _driveService.Init(() => { this.Invoke(new Action(() => { ShowMsg("数据初始化完成！"); this.btn_query.Enabled = true; })); },
+                               error => { if (MessageBox.Show(error,"大哥,服务器不叼你，还继续试么？", MessageBoxButtons.OKCancel) == DialogResult.OK) DriveInit(); else Application.Exit(); });
         }
 
         /// <summary>
@@ -68,6 +83,7 @@ namespace xctool
         /// <param name="e"></param>
         private void btn_query_Click(object sender, EventArgs e)
         {
+            ShowMsg("开始加载查询数据....."); 
             xptable.Clear();
             _sel.Clear();
             _queryDate= datepicker.Value.ToString("yyy-MM-dd");
@@ -75,6 +91,8 @@ namespace xctool
             bool hasNewDate = false;
             _driveService.Query(_driveType, _queryDate, new Action<DataTable, bool>((m, istech) =>
             {
+                #region 成功返回
+            
                 _dt = m;
                 //对当前时间的支持
                 if (istech)
@@ -86,10 +104,10 @@ namespace xctool
                         DataRow dr = _dt.NewRow();
                         foreach (DataColumn col in _dt.Columns)
                         {
-                             if (col.ColumnName == "教练员" || col.ColumnName == "车型" || col.ColumnName == "教练号" || col.ColumnName == "日期")
-                                 dr[col.ColumnName] = _dt.Rows[_dt.Rows.Count - 1][col.ColumnName];
-                             else
-                                  dr[col.ColumnName] ="yunyue";
+                            if (col.ColumnName == "教练员" || col.ColumnName == "车型" || col.ColumnName == "教练号" || col.ColumnName == "日期")
+                                dr[col.ColumnName] = _dt.Rows[_dt.Rows.Count - 1][col.ColumnName];
+                            else
+                                dr[col.ColumnName] = "yunyue";
                         }
                         dr[2] = _queryDate;
                         _dt.Rows.Add(dr);
@@ -112,17 +130,17 @@ namespace xctool
 
                     //
                     List<Row> rows = new List<Row>();
-                    int r=0;
+                    int r = 0;
                     foreach (DataRow dr in m.Rows)
                     {
                         List<Cell> cells = new List<Cell>();
-                        int c=0;
+                        int c = 0;
                         foreach (DataColumn col in m.Columns)
                         {
                             string value = dr[col.ColumnName].ToString();
                             if (value == "yunyue")
                             {
-                                Cell cell=new Cell("可预约", false, Color.Black, Color.Red, new Font("宋体", 12, FontStyle.Bold));
+                                Cell cell = new Cell("可预约", false, Color.Black, Color.Red, new Font("宋体", 12, FontStyle.Bold));
                                 cell.Data = r + "|" + c;
                                 cells.Add(cell);
                             }
@@ -149,7 +167,17 @@ namespace xctool
                     xptable.TableModel = table;
                     xptable.EndUpdate();
                 }));
-            }));
+
+                //
+                ShowMsg("加载数据完成......");
+                #endregion
+            }),
+            error => {
+                if (MessageBox.Show(error,"大哥,服务器不叼你，还继续试么？", MessageBoxButtons.OKCancel) == DialogResult.OK)
+                {
+                    btn_query_Click(sender, e);
+                }
+            });
         }
 
         /// <summary>
@@ -231,6 +259,31 @@ namespace xctool
             btn_query.Enabled = queryable;
         }
 
+        //
+        private void Drive_Resize(object sender, EventArgs e)
+        {
+            //
+            panel_msg.Width = flowLayoutPanel.Width - panel_query.Width - 15;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="msg"></param>
+        private void ShowMsg(string msg)
+        {
+            if (lab_msg.InvokeRequired)
+            {
+                lab_msg.Invoke(new Action(() =>
+                {
+                    lab_msg.Text = msg;
+                }));
+            }
+            else
+            {
+                lab_msg.Text = msg;
+            }
+        }
 
     }
 }

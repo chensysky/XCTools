@@ -39,6 +39,7 @@
             this.label2 = new System.Windows.Forms.Label();
             this.label3 = new System.Windows.Forms.Label();
             this.label1 = new System.Windows.Forms.Label();
+            this.lab_stop = new System.Windows.Forms.Label();
             this.group_order.SuspendLayout();
             this.panel2.SuspendLayout();
             this.panel1.SuspendLayout();
@@ -82,6 +83,7 @@
             // panel1
             // 
             this.panel1.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.panel1.Controls.Add(this.lab_stop);
             this.panel1.Controls.Add(this.lab_del);
             this.panel1.Controls.Add(this.lab_type);
             this.panel1.Controls.Add(this.lab_techer);
@@ -162,6 +164,19 @@
             this.label1.TabIndex = 0;
             this.label1.Text = "日期：";
             // 
+            // lab_stop
+            // 
+            this.lab_stop.AutoSize = true;
+            this.lab_stop.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.lab_stop.Font = new System.Drawing.Font("Arial", 12F, System.Drawing.FontStyle.Underline, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            this.lab_stop.ForeColor = System.Drawing.SystemColors.HotTrack;
+            this.lab_stop.Location = new System.Drawing.Point(219, 3);
+            this.lab_stop.Name = "lab_stop";
+            this.lab_stop.Size = new System.Drawing.Size(40, 16);
+            this.lab_stop.TabIndex = 2;
+            this.lab_stop.Text = "STOP";
+            this.lab_stop.Click += new System.EventHandler(this.lab_stop_Click);
+            // 
             // Order
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
@@ -191,5 +206,6 @@
         private System.Windows.Forms.Label lab_techer;
         private System.Windows.Forms.Label lab_date;
         private System.Windows.Forms.Label lab_del;
+        private System.Windows.Forms.Label lab_stop;
     }
 }

@@ -31,22 +31,39 @@ namespace xctool.Service
         /// <summary>
         /// 加载
         /// </summary>
-        public void Init(Action success)
+        public void Init(Action success, Action<string> fail)
         {
+            string url = ServiceConfig.GetConfig(ServiceConfigType.DriveServicePostUrl) + GetUrlGetArgs();
             Http.Get(ServiceConfig.GetConfig(ServiceConfigType.DriveServicePostUrl)+GetUrlGetArgs()).OnSuccess(content =>
             {
                 Html.HtmlDocument document = new Html.HtmlDocument();
                 document.LoadHtml(content);
                 _inputs = document.DocumentNode.SelectNodes("//input[@type='password' or @type='hidden' or @type='text' or @type='radio']");
                 _selects = document.DocumentNode.SelectNodes("//select");
-                success();
-            }).Go();
+
+                if (ServiceError.TestServiceError(document.DocumentNode))
+                    fail("服务器出错！");
+                else
+                {
+                    //
+                    var msgnode = document.DocumentNode.SelectSingleNode("/html[1]/body[1]/table[1]/tr[2]/td[1]/table[1]/tr[1]/td[2]/table[2]/tr[1]/td[1]/table[1]/tr[1]/td[2]/div[1]/span[1]");
+                    if (msgnode != null && !String.IsNullOrEmpty(msgnode.InnerText))
+                    {
+                        fail(msgnode.InnerText);
+                        return;
+                    }
+                    success();
+                }
+            }).TimeOut(5000).OnFail(new Action<WebException>((exp) =>
+            {
+                fail(exp.ToString());
+            })).Go();
         }
 
         /// <summary>
         /// 得到班车信息
         /// </summary>
-        public void GetRegBus(Action subMit)
+        public void GetRegGoWay(Action subMit, Action<string> fail)
         {
             string ddlineControlName = "";
             Dictionary<string, string> form = new Dictionary<string, string>();
@@ -57,7 +74,7 @@ namespace xctool.Service
                 {
                     if (!form.ContainsKey(name))
                     {
-                        form.Add(name, "radio4");
+                        form.Add(name, "radio3");
                     }
                 }
                 else
@@ -71,7 +88,7 @@ namespace xctool.Service
                 string name = node.Attributes["name"].Value;
                 if (name.IndexOf("ddlLine") != -1)
                 {
-                    form.Add(name, "班车");
+                    form.Add(name, "---请选择---");
                     ddlineControlName = name;
                 }
                 else if (name.IndexOf("ddlStationAndTime") != -1)
@@ -81,26 +98,32 @@ namespace xctool.Service
             }
             form.Add("__EVENTARGUMENT", "");
             form.Add("__EVENTTARGET", ddlineControlName);
-            string url=ServiceConfig.GetConfig(ServiceConfigType.DriveServicePostUrl) + GetUrlGetArgs();
+            string url = ServiceConfig.GetConfig(ServiceConfigType.DriveServicePostUrl) + GetUrlGetArgs();
             Http.Post(url).Referer(url).Form(form).OnSuccess(result =>
             {
                 Html.HtmlDocument document = new Html.HtmlDocument();
                 document.LoadHtml(result);
                 _inputs = document.DocumentNode.SelectNodes("//input[@type='password' or @type='hidden' or @type='submit' or @type='text' or @type='radio']");
-                _selects = document.DocumentNode.SelectNodes("//select");
                 //
-                subMit();
-            }).Go();
+                if (ServiceError.TestServiceError(document.DocumentNode))
+                    fail("服务器出错！");
+                else
+                    subMit();
+            }).TimeOut(5000).OnFail(new Action<WebException>((exp) =>
+            {
+                fail(exp.ToString());
+            })).Go();
         }
 
 
         /// <summary>
         /// 提交
         /// </summary>
-        public void Submit(Action<string> success)
+        public void Submit(Action success,Action<string> fail)
         {
-            this.GetRegBus(() =>
+            this.GetRegGoWay(() =>
             {
+                #region success
                 Dictionary<string, string> form = new Dictionary<string, string>();
                 foreach (Html.HtmlNode node in _inputs)
                 {
@@ -109,7 +132,7 @@ namespace xctool.Service
                     {
                         if (!form.ContainsKey(name))
                         {
-                            form.Add(name, "radio4");
+                            form.Add(name, "radio3");
                         }
                     }
                     else
@@ -118,42 +141,38 @@ namespace xctool.Service
                             form.Add(name, node.Attributes["value"].Value);
                     }
                 }
-                foreach (Html.HtmlNode node in _selects)
-                {
-                    string name = node.Attributes["name"].Value;
-                    if (name.IndexOf("ddlLine") != -1)
-                    {
-                        form.Add(name, "班车");
-                    }
-                    else if (name.IndexOf("ddlStationAndTime") != -1)
-                    {
-                        form.Add(name, node.SelectSingleNode("./option[2]").GetAttributeValue("value", "国际赛车场  " + (_info.Time - 1) + ":40"));
-                    }
-                }
+
                 form.Add("__EVENTARGUMENT", "");
                 form.Add("__EVENTTARGET", "");
 
-                string h = GetUrlGetArgs();
                 Http.Post(ServiceConfig.GetConfig(ServiceConfigType.DriveServicePostUrl) + GetUrlGetArgs()).Form(form).OnSuccess(result =>
                 {
                      Html.HtmlDocument document = new Html.HtmlDocument();
                      document.LoadHtml(result);
-                     Html.HtmlNodeCollection trs = document.DocumentNode.SelectNodes("/html[1]/body[1]/table[1]/tr[2]/td[1]/table[1]/tr[1]/td[2]/table[2]/tr[5]/td[1]/div[1]/fieldset[1]/div[1]/table[1]/tr[position()>1]");
-                     foreach (Html.HtmlNode tr in trs)
+                     if (ServiceError.TestServiceError(document.DocumentNode))
+                         fail("服务器出错！");
+                     else
                      {
-                         string date = tr.SelectSingleNode("./td[1]/span").InnerText;
-                         string time = tr.SelectSingleNode("./td[2]/span").InnerText;
-                         string techer = tr.SelectSingleNode("./td[3]/span").InnerText;
-                         if (_info.TecherName == techer && time.Substring(0, 2) == _info.Time.ToString("D2") && date == _info.Date)
+                         Html.HtmlNodeCollection trs = document.DocumentNode.SelectNodes("/html[1]/body[1]/table[1]/tr[2]/td[1]/table[1]/tr[1]/td[2]/table[2]/tr[5]/td[1]/div[1]/fieldset[1]/div[1]/table[1]/tr[position()>1]");
+                         foreach (Html.HtmlNode tr in trs)
                          {
-                            success(result);
-                             break;
+                             string date = tr.SelectSingleNode("./td[1]/span").InnerText;
+                             string time = tr.SelectSingleNode("./td[2]/span").InnerText;
+                             string techer = tr.SelectSingleNode("./td[3]/span").InnerText;
+                             if (_info.TecherName == techer && time.Substring(0, 2) == _info.Time.ToString("D2") && date == _info.Date)
+                             {
+                                 success();
+                                 break;
+                             }
                          }
+                         fail("提交失败！");
                      }
-                    
-                  
-                }).Go();
-            });
+                }).TimeOut(5000).OnFail(new Action<WebException>((exp) =>
+                {
+                    fail(exp.ToString());
+                })).Go();
+                #endregion
+            },fail);
         }
 
         

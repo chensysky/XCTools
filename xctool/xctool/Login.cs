@@ -60,16 +60,22 @@ namespace xctool
         /// <param name="e"></param>
         private void btn_login_Click(object sender, EventArgs e)
         {
-            _loginService.Login(txt_no.Text.Trim(), txt_pwd.Text.Trim(), txt_code.Text.Trim(), r => {
-                if (r) {
+            _loginService.Login(txt_no.Text.Trim(), txt_pwd.Text.Trim(), txt_code.Text.Trim(), r =>
+            {
+                if (r)
+                {
                     this.DialogResult = DialogResult.OK;
                 }
                 else
                 {
-                    this.Invoke(new Action(() => { MessageBox.Show("大哥，登录失败！"); btn_login.Enabled = false; })); 
+                    this.Invoke(new Action(() => { MessageBox.Show("大哥，登录失败！"); btn_login.Enabled = false; }));
                     //
                     LoadCode();
                 }
+            }, error => {
+                this.Invoke(new Action(() => { MessageBox.Show(error,"大哥，服务器超时未响应,重新再试吧！"); btn_login.Enabled = false; }));
+                //
+                LoadCode();
             });
         }
 
@@ -78,7 +84,9 @@ namespace xctool
         /// </summary>
         private void LoadCode()
         {
-            _loginService.Init(m => { this.Invoke(new Action(() => { this.picbox_code.Image = m; this.btn_login.Enabled = true; })); });
+            _loginService.Init(
+                    m => { this.Invoke(new Action(() => { this.picbox_code.Image = m; this.btn_login.Enabled = true; })); },
+                    error => { if (MessageBox.Show(error,"大哥初始化失败了，还继续试么？", MessageBoxButtons.OKCancel) == DialogResult.OK) LoadCode(); else this.DialogResult = DialogResult.Cancel; });
         }
 
     }

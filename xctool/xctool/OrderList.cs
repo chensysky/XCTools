@@ -57,7 +57,6 @@ namespace xctool
         /// <param name="infolist"></param>
         public void AddOrder(List<OrderInfo> infolist)
         {
-          
             foreach (OrderInfo info in infolist)
             {
                 if(!_infolist.Contains(info))
